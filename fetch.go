@@ -31,7 +31,7 @@ type problem struct {
 	problem_text string //handle for images
 	input []string 
 	output []string
-	sample_tests string
+	note string
 }
 func main(){
 	var fetched_problem problem
@@ -45,6 +45,7 @@ func main(){
   fetched_problem.space = e.ChildText(".header .memory-limit .property-title") 
   fetched_problem.time = e.ChildText(".header .time-limit .property-title") 
 
+
 	memory_value:= e.ChildText(".header .memory-limit ")
 	time_value := e.ChildText(".header .time-limit ")
 	//regex to get only the number for the time_value - varuable
@@ -54,9 +55,19 @@ func main(){
 
 		
 	   e.DOM.Find(".header ~ div").Each(func(_ int, s * goquery.Selection){
-		if s.HasClass("input-specification") || s.HasClass("output-specification") || s.HasClass("sample-tests") ||(s.HasClass("note")){
+			 //there seems to be a hidden text for llms to follow, supposedly to find cheaters
+			 //ignoring the texts here
+			 /* s.HasClass("input-specification") || s.HasClass("output-specification") || */ 
+		if s.HasClass("note"){
+			fmt.Println("entered")
+			s.Find("p").Each(func(_ int, n* goquery.Selection){
+				fetched_problem.note += n.Text() + "\n"
+			})
+		} //after getting the note its ignored, cus the immediate outside concerns with gathering for the problem-text
+		if s.HasClass("sample-tests") ||(s.HasClass("note")) ||s.HasClass("text-hidden"){
 			return
 		}
+
 		s.Find("p").Each(func(_ int, p* goquery.Selection){
 			text:= strings.TrimSpace(p.Text())
 			if text != "" {
@@ -70,13 +81,14 @@ func main(){
 
 
 	 
-	//printables are kept seperately 
+//	printables are kept seperately 
 	fmt.Println(fetched_problem.title)
 	fmt.Println(fetched_problem.time + ": " + time_value + "s")
 	fmt.Println(fetched_problem.space + ": " + memory_value + "Mb")
+	fmt.Println("\n\n")
 	fmt.Println(fetched_problem.problem_text)
 
-	fetched_problem.request_at = time.Now()
+
 	})
 c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 		
@@ -120,8 +132,9 @@ c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 		
 	})
 
-	start_time := time.Now()
   target_URL := fmt.Sprintf("https://codeforces.com/problemset/problem/" + helper.Get_id())
+	//https://codeforeces.com/problemset/problem throws an 404, so the helper return ""(in helper/get_id) works
+	start_time := time.Now()
 	c.Visit(target_URL)
 	c.Wait()
 	fmt.Println("Test Cases :\n " + fetched_problem.input[0])
@@ -135,6 +148,7 @@ c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 		fmt.Println(fetched_problem.output[i])
 	 // fmt.Println(fetched_problem.output[i])
 	}
-	 
+	fmt.Println("\n"+fetched_problem.note)
+	fetched_problem.request_at = time.Now()
 	fmt.Println(fmt.Sprintf("\nFetched : [ %.6s ms ]\n", fetched_problem.request_at.Sub(start_time)))
 }
