@@ -7,6 +7,7 @@ import(
 	"regexp"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
+	"cfx-scraper/helper"
 )
 /*
 format:
@@ -51,7 +52,7 @@ func main(){
 	time_value = reg.ReplaceAllString(time_value, "")
 	memory_value = reg.ReplaceAllString(memory_value, "")
 
-
+		
 	   e.DOM.Find(".header ~ div").Each(func(_ int, s * goquery.Selection){
 		if s.HasClass("input-specification") || s.HasClass("output-specification") || s.HasClass("sample-tests") ||(s.HasClass("note")){
 			return
@@ -106,7 +107,7 @@ c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 			singleOutput = outputPre.Text()
 		}
 
-		// Trim extra padding and store in slices
+		//trim extra padding and store in slices
 		singleInput = strings.TrimSpace(singleInput)
 		singleOutput = strings.TrimSpace(singleOutput)
 
@@ -119,12 +120,11 @@ c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 		
 	})
 
-
-
 	start_time := time.Now()
-	c.Visit("https://codeforces.com/problemset/problem/2264/D")
+  target_URL := fmt.Sprintf("https://codeforces.com/problemset/problem/" + helper.Get_id())
+	c.Visit(target_URL)
 	c.Wait()
-	fmt.Println("Test Cases : " + fetched_problem.input[0])
+	fmt.Println("Test Cases :\n " + fetched_problem.input[0])
 	//passing the first element resolves it as a string when the whole structure is []string, can't really add the "Input :" after the first element, but is good enough to format with testcase follwed by the input values
 	for i:= 0; i<len(fetched_problem.input); i++ {
 
