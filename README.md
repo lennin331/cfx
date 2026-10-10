@@ -20,3 +20,4 @@ helper/
 > get_id_active : Handles active contest - registeration and live standings and submit status
 
 Fomat everything for fuck sake, them text don't wrap around, fuck ahh $$$ everywhere
+converting LaTex -> Terminal font

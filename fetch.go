@@ -1,4 +1,4 @@
-package main
+package main 
 import(
 	"fmt"
 	//"os"
@@ -7,7 +7,7 @@ import(
 	"regexp"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
-	"cfx-scraper/helper"
+  "cfx-scraper/helper"
 )
 /*
 format:
@@ -37,7 +37,7 @@ func main(){
 	var fetched_problem problem
 	c:= colly.NewCollector(
 		colly.AllowedDomains("codeforces.com"),
-		colly.Async(true),
+		colly.Async(false),
 	)
 	c.OnHTML(".problem-statement", func(e *colly.HTMLElement){
 	fetched_problem.title = e.ChildText(".header .title") // title - variable 
@@ -151,4 +151,7 @@ c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 	fmt.Println("\n"+fetched_problem.note)
 	fetched_problem.request_at = time.Now()
 	fmt.Println(fmt.Sprintf("\nFetched : [ %.6s ms ]\n", fetched_problem.request_at.Sub(start_time)))
+	// helper.Submit()
+	return 
 }
+
