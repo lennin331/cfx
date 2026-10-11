@@ -59,7 +59,7 @@ func main(){
 			 //ignoring the texts here
 			 /* s.HasClass("input-specification") || s.HasClass("output-specification") || */ 
 		if s.HasClass("note"){
-			fmt.Println("entered")
+
 			s.Find("p").Each(func(_ int, n* goquery.Selection){
 				fetched_problem.note += n.Text() + "\n"
 			})
@@ -137,7 +137,7 @@ c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 	start_time := time.Now()
 	c.Visit(target_URL)
 	c.Wait()
-	fmt.Println("Test Cases :\n " + fetched_problem.input[0])
+	fmt.Println("Test Case:" + fetched_problem.input[0])
 	//passing the first element resolves it as a string when the whole structure is []string, can't really add the "Input :" after the first element, but is good enough to format with testcase follwed by the input values
 	for i:= 0; i<len(fetched_problem.input); i++ {
 
@@ -150,7 +150,7 @@ c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 	}
 	fmt.Println("\n"+fetched_problem.note)
 	fetched_problem.request_at = time.Now()
-	fmt.Println(fmt.Sprintf("\nFetched : [ %.6s ms ]\n", fetched_problem.request_at.Sub(start_time)))
+	fmt.Println(fmt.Sprintf("\nFetched : [%.6s ms]\n", fetched_problem.request_at.Sub(start_time)))
 	// helper.Submit()
 	return 
 }
