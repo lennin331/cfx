@@ -41,11 +41,10 @@ func main(){
 	)
 	c.OnHTML(".problem-statement", func(e *colly.HTMLElement){
 	fetched_problem.title = e.ChildText(".header .title") // title - variable 
-
   fetched_problem.space = e.ChildText(".header .memory-limit .property-title") 
   fetched_problem.time = e.ChildText(".header .time-limit .property-title") 
 
-
+	//tiem and space 
 	memory_value:= e.ChildText(".header .memory-limit ")
 	time_value := e.ChildText(".header .time-limit ")
 	//regex to get only the number for the time_value - varuable
@@ -54,47 +53,39 @@ func main(){
 	memory_value = reg.ReplaceAllString(memory_value, "")
 
 		
-	   e.DOM.Find(".header ~ div").Each(func(_ int, s * goquery.Selection){
+	e.DOM.Find(".header ~ div").Each(func(_ int, s * goquery.Selection){
 			 //there seems to be a hidden text for llms to follow, supposedly to find cheaters
 			 //ignoring the texts here
 			 /* s.HasClass("input-specification") || s.HasClass("output-specification") || */ 
-		if s.HasClass("note"){
+	if s.HasClass("note"){
+		s.Find("p").Each(func(_ int, n* goquery.Selection){
+			fetched_problem.note += n.Text() + "\n"
+		})
+	} //after getting the note its ignored, cus the immediate outside concerns with gathering for the problem-text
+	if s.HasClass("sample-tests") ||(s.HasClass("note")) ||s.HasClass("text-hidden"){
+		return
+	}
 
-			s.Find("p").Each(func(_ int, n* goquery.Selection){
-				fetched_problem.note += n.Text() + "\n"
-			})
-		} //after getting the note its ignored, cus the immediate outside concerns with gathering for the problem-text
-		if s.HasClass("sample-tests") ||(s.HasClass("note")) ||s.HasClass("text-hidden"){
-			return
-		}
-
-		s.Find("p").Each(func(_ int, p* goquery.Selection){
-			text:= strings.TrimSpace(p.Text())
+	s.Find("p").Each(func(_ int, p* goquery.Selection){
+		text:= strings.TrimSpace(p.Text())
 			if text != "" {
 				fetched_problem.problem_text += text +"\n"
 			}
 		})
 		fetched_problem.problem_text += "\n\n" // this apparently handles the note part at the bottom of the page
-
 	})
-
-
-
-	 
-//	printables are kept seperately 
+  //printables are kept seperately 
 	fmt.Println(fetched_problem.title)
 	fmt.Println(fetched_problem.time + ": " + time_value + "s")
 	fmt.Println(fetched_problem.space + ": " + memory_value + "Mb")
 	fmt.Println("\n\n")
-	fmt.Println(fetched_problem.problem_text)
+	fmt.Println(helper.CleanProblemText(fetched_problem.problem_text))
 
 
 	})
-c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
-		
+	c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 		inputPre := e.DOM.Find(".input pre")
 		var singleInput string
-
 		linesIn := inputPre.Find(".test-example-line")
 		if linesIn.Length() > 0 {
 			linesIn.Each(func(_ int, line *goquery.Selection) {
@@ -104,11 +95,8 @@ c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 			inputPre.Find("br").ReplaceWithHtml("\n")
 			singleInput = inputPre.Text()
 		}
-
-		
 		outputPre := e.DOM.Find(".output pre")
 		var singleOutput string
-
 		linesOut := outputPre.Find(".test-example-line")
 		if linesOut.Length() > 0 {
 			linesOut.Each(func(_ int, line *goquery.Selection) {
@@ -118,18 +106,15 @@ c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 			outputPre.Find("br").ReplaceWithHtml("\n")
 			singleOutput = outputPre.Text()
 		}
-
 		//trim extra padding and store in slices
 		singleInput = strings.TrimSpace(singleInput)
 		singleOutput = strings.TrimSpace(singleOutput)
-
 		if singleInput != "" {
 			fetched_problem.input = append(fetched_problem.input, singleInput)
 		}
 		if singleOutput != "" {
 			fetched_problem.output = append(fetched_problem.output, singleOutput)
 		}
-		
 	})
 
   target_URL := fmt.Sprintf("https://codeforces.com/problemset/problem/" + helper.Get_id())
@@ -138,7 +123,8 @@ c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 	c.Visit(target_URL)
 	c.Wait()
 	fmt.Println("Test Case:" + fetched_problem.input[0])
-	//passing the first element resolves it as a string when the whole structure is []string, can't really add the "Input :" after the first element, but is good enough to format with testcase follwed by the input values
+	//passing the first element resolves it as a string when the whole structure is []string, can't really add the "Input :" after the first element
+	//good enough to format with testcase follwed by the input values
 	for i:= 0; i<len(fetched_problem.input); i++ {
 
 		// fmt.Print(fetched_problem.input[i])
@@ -148,7 +134,7 @@ c.OnHTML(".sample-tests .sample-test", func(e *colly.HTMLElement) {
 		fmt.Println(fetched_problem.output[i])
 	 // fmt.Println(fetched_problem.output[i])
 	}
-	fmt.Println("\n"+fetched_problem.note)
+	fmt.Println("\n"+helper.CleanProblemText(fetched_problem.note))
 	fetched_problem.request_at = time.Now()
 	fmt.Println(fmt.Sprintf("\nFetched : [%.6s ms]\n", fetched_problem.request_at.Sub(start_time)))
 	// helper.Submit()
