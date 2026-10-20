@@ -33,7 +33,7 @@ type problem struct {
 	output []string
 	note string
 }
-func main(){
+func Fetch(){
 	var fetched_problem problem
 	c:= colly.NewCollector(
 		colly.AllowedDomains("codeforces.com"),

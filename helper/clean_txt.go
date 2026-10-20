@@ -13,7 +13,12 @@ func CleanProblemText(text string) string {
 		"\\neq": "≠",
 		"\\times": "×",
 		"\\dots": "...",
+		"\\ldots": "...",
 		"\\in": "in",
+		"\\lt" : "<",
+		"\\gcd" : "gcd",
+		//s_i=matht{some_text}
+		//\texttrm{some_text}
 	}
 	
 	for latex, unicode := range replacements {
